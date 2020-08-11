@@ -1,11 +1,6 @@
 package io.github.haykam821.territorybattle.game.phase;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
-
 import io.github.haykam821.territorybattle.game.PlayerTerritory;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMap;
@@ -35,6 +30,10 @@ import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.PlayerRef;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TerritoryBattleActivePhase {
 	private static final Direction[] NEXT_TO_DIRECTIONS = new Direction[] {
@@ -124,17 +123,18 @@ public class TerritoryBattleActivePhase {
 	private void open() {
 		this.opened = true;
 
-		int angle = 0;
 		double distance = this.getDistance();
- 		for (PlayerTerritory territory : this.territories) {
+		for (int i = 0; i < this.territories.size(); i++) {
+			PlayerTerritory territory = this.territories.get(i);
 			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
 			if (player != null) {
 				player.inventory.clear();
 				territory.giveTerritoryStack(player);
 
 				player.setGameMode(GameMode.ADVENTURE);
-				this.spawn(player, angle, distance);
-				angle += 1 / (double) (this.territories.size() + 1);
+
+				double theta = ((double) i / this.territories.size()) * 2 * Math.PI;
+				this.spawn(player, theta, distance);
 
 				this.world.setBlockState(player.getBlockPos().down(), territory.getTerritoryState());
 			}
@@ -205,14 +205,14 @@ public class TerritoryBattleActivePhase {
 		return true;
 	}
 
-	public void spawn(ServerPlayerEntity player, int angle, double distance) {
+	public void spawn(ServerPlayerEntity player, double theta, double distance) {
 		Vec3d center = map.getPlatform().getCenter();
 
-		double x = center.getX() + Math.cos(angle) * distance;
+		double x = center.getX() + Math.sin(theta) * distance;
 		double y = center.getY() + 0.5;
-		double z = center.getZ() + Math.sin(angle) * distance;
+		double z = center.getZ() - Math.cos(theta) * distance;
 
 		Vec3d pos = Vec3d.ofCenter(new BlockPos(x, y, z));
-		player.teleport(this.world, pos.getX(), y, pos.getZ(), angle + 90, 0);
+		player.teleport(this.world, pos.getX(), y, pos.getZ(), (float) Math.toDegrees(theta), 0);
 	}
 }
