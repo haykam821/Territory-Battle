@@ -5,14 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.haykam821.territorybattle.Main;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
-import net.gegy1000.plasmid.game.config.GameConfig;
-import net.gegy1000.plasmid.game.config.PlayerConfig;
 import net.minecraft.block.Block;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.game.config.PlayerConfig;
 
-public class TerritoryBattleConfig implements GameConfig {
+public class TerritoryBattleConfig {
 	public static final Codec<TerritoryBattleConfig> CODEC = RecordCodecBuilder.create(instance -> {
 		return instance.group(
 			TerritoryBattleMapConfig.CODEC.fieldOf("map").forGetter(TerritoryBattleConfig::getMapConfig),

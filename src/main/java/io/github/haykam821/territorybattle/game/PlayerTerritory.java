@@ -1,6 +1,5 @@
 package io.github.haykam821.territorybattle.game;
 
-import net.gegy1000.plasmid.util.PlayerRef;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -9,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.util.PlayerRef;
 
 public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	private final PlayerRef playerRef;

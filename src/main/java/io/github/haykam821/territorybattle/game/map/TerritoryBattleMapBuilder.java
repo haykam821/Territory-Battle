@@ -3,10 +3,10 @@ package io.github.haykam821.territorybattle.game.map;
 import java.util.concurrent.CompletableFuture;
 
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
-import net.gegy1000.plasmid.game.map.template.MapTemplate;
-import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public class TerritoryBattleMapBuilder {
 	private final TerritoryBattleConfig config;

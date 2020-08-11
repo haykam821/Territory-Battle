@@ -10,16 +10,6 @@ import io.github.haykam821.territorybattle.game.PlayerTerritory;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMap;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameWorld;
-import net.gegy1000.plasmid.game.event.GameCloseListener;
-import net.gegy1000.plasmid.game.event.GameOpenListener;
-import net.gegy1000.plasmid.game.event.GameTickListener;
-import net.gegy1000.plasmid.game.event.PlayerAddListener;
-import net.gegy1000.plasmid.game.event.PlayerDeathListener;
-import net.gegy1000.plasmid.game.rule.GameRule;
-import net.gegy1000.plasmid.game.rule.RuleResult;
-import net.gegy1000.plasmid.util.PlayerRef;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.boss.BossBar;
@@ -35,6 +25,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import xyz.nucleoid.plasmid.game.Game;
+import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.event.GameCloseListener;
+import xyz.nucleoid.plasmid.game.event.GameOpenListener;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
+import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
+import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
+import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.util.PlayerRef;
 
 public class TerritoryBattleActivePhase {
 	private static final Direction[] NEXT_TO_DIRECTIONS = new Direction[] {

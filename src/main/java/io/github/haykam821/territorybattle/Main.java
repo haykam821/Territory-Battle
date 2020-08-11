@@ -4,10 +4,10 @@ import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.phase.TerritoryBattleWaitingPhase;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.tag.TagRegistry;
-import net.gegy1000.plasmid.game.GameType;
 import net.minecraft.block.Block;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.game.GameType;
 
 public class Main implements ModInitializer {
 	public static final String MOD_ID = "territorybattle";
