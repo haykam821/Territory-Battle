@@ -5,8 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.haykam821.territorybattle.Main;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
+import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
@@ -46,7 +46,7 @@ public class TerritoryBattleConfig {
 	}
 
 	public Tag<Block> getPlatformBlocks() {
-		Tag<Block> tag = BlockTags.getContainer().get(this.playerBlocksId);
+		Tag<Block> tag = TagRegistry.block(this.playerBlocksId);
 		return tag == null ? Main.PLAYER_BLOCKS : tag;
 	}
 	

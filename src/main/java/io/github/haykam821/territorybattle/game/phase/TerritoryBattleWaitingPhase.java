@@ -6,11 +6,12 @@ import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMap;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapBuilder;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.StartResult;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
@@ -32,18 +33,18 @@ public class TerritoryBattleWaitingPhase {
 		this.config = config;
 	}
 
-	public static CompletableFuture<Void> open(MinecraftServer server, TerritoryBattleConfig config) {
-		TerritoryBattleMapBuilder mapBuilder = new TerritoryBattleMapBuilder(config);
+	public static CompletableFuture<Void> open(GameOpenContext<TerritoryBattleConfig> context) {
+		TerritoryBattleMapBuilder mapBuilder = new TerritoryBattleMapBuilder(context.getConfig());
 
 		return mapBuilder.create().thenAccept(map -> {
 			BubbleWorldConfig worldConfig = new BubbleWorldConfig()
-				.setGenerator(map.createGenerator())
+				.setGenerator(map.createGenerator(context.getServer()))
 				.setDefaultGameMode(GameMode.SPECTATOR);
-			GameWorld gameWorld = GameWorld.open(server, worldConfig);
+			GameWorld gameWorld = context.openWorld(worldConfig);
 
-			TerritoryBattleWaitingPhase phase = new TerritoryBattleWaitingPhase(gameWorld, map, config);
+			TerritoryBattleWaitingPhase phase = new TerritoryBattleWaitingPhase(gameWorld, map, context.getConfig());
 
-			gameWorld.newGame(game -> {
+			gameWorld.openGame(game -> {
 				TerritoryBattleActivePhase.setRules(game);
 
 				// Listeners
@@ -77,10 +78,10 @@ public class TerritoryBattleWaitingPhase {
 		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
 	}
 
-	private boolean onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		// Respawn player
 		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
-		return true;
+		return ActionResult.SUCCESS;
 	}
 
 	public static void spawn(ServerWorld world, TerritoryBattleMap map, ServerPlayerEntity player) {

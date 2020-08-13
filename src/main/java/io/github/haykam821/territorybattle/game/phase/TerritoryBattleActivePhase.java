@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -62,11 +63,11 @@ public class TerritoryBattleActivePhase {
 	}
 
 	public static void setRules(Game game) {
-		game.setRule(GameRule.ALLOW_CRAFTING, RuleResult.DENY);
-		game.setRule(GameRule.ALLOW_PORTALS, RuleResult.DENY);
-		game.setRule(GameRule.ALLOW_PVP, RuleResult.DENY);
+		game.setRule(GameRule.CRAFTING, RuleResult.DENY);
 		game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-		game.setRule(GameRule.ENABLE_HUNGER, RuleResult.DENY);
+		game.setRule(GameRule.HUNGER, RuleResult.DENY);
+		game.setRule(GameRule.PORTALS, RuleResult.DENY);
+		game.setRule(GameRule.PVP, RuleResult.DENY);
 	}
 
 	private static List<PlayerTerritory> getTerritories(Set<ServerPlayerEntity> players, List<Block> platformBlocks) {
@@ -93,7 +94,7 @@ public class TerritoryBattleActivePhase {
 
 		TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameWorld, map, config, territories);
 
-		gameWorld.newGame(game -> {
+		gameWorld.openGame(game -> {
 			TerritoryBattleActivePhase.setRules(game);
 
 			// Listeners
@@ -174,7 +175,7 @@ public class TerritoryBattleActivePhase {
 				player.sendMessage(endingMessage, false);
 			}
 
-			this.gameWorld.closeWorld();
+			this.gameWorld.close();
 		}
 	}
 
@@ -199,10 +200,10 @@ public class TerritoryBattleActivePhase {
 		this.timerBar.addPlayer(player);
 	}
 
-	private boolean onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		// Respawn player
 		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
-		return true;
+		return ActionResult.SUCCESS;
 	}
 
 	public void spawn(ServerPlayerEntity player, double theta, double distance) {

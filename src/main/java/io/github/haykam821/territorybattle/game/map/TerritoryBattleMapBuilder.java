@@ -24,7 +24,7 @@ public class TerritoryBattleMapBuilder {
 			this.build(bounds, template);
 
 			return new TerritoryBattleMap(template, bounds);
-		}, Util.getServerWorkerExecutor());
+		}, Util.getMainWorkerExecutor());
 	}
 
 	public void build(BlockBounds bounds, MapTemplate template) {
