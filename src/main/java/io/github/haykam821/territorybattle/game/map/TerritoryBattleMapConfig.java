@@ -11,21 +11,44 @@ public class TerritoryBattleMapConfig {
 		return instance.group(
 			Codec.INT.fieldOf("x").forGetter(map -> map.x),
 			Codec.INT.fieldOf("z").forGetter(map -> map.z),
-			BlockState.CODEC.optionalFieldOf("platform", Blocks.WHITE_WOOL.getDefaultState()).forGetter(TerritoryBattleMapConfig::getPlatform)
+			BlockState.CODEC.optionalFieldOf("floor", Blocks.WHITE_WOOL.getDefaultState()).forGetter(TerritoryBattleMapConfig::getFloor),
+			BlockState.CODEC.optionalFieldOf("floor_outline", Blocks.SPRUCE_PLANKS.getDefaultState()).forGetter(TerritoryBattleMapConfig::getFloorOutline),
+			BlockState.CODEC.optionalFieldOf("wall", Blocks.COBBLESTONE_WALL.getDefaultState()).forGetter(TerritoryBattleMapConfig::getWall),
+			BlockState.CODEC.optionalFieldOf("wall_top", Blocks.SPRUCE_SLAB.getDefaultState()).forGetter(TerritoryBattleMapConfig::getWallTop)
 		).apply(instance, TerritoryBattleMapConfig::new);
 	});
 
 	public final int x;
 	public final int z;
-	private final BlockState platform;
 
-	public TerritoryBattleMapConfig(int x, int z, BlockState platform) {
+	private final BlockState floor;
+	private final BlockState floorOutline;
+	private final BlockState wall;
+	private final BlockState wallTop;
+
+	public TerritoryBattleMapConfig(int x, int z, BlockState floor, BlockState floorOutline, BlockState wall, BlockState wallTop) {
 		this.x = x;
 		this.z = z;
-		this.platform = platform;
+
+		this.floor = floor;
+		this.floorOutline = floorOutline;
+		this.wall = wall;
+		this.wallTop = wallTop;
 	}
 
-	public BlockState getPlatform() {
-		return this.platform;
+	public BlockState getFloor() {
+		return this.floor;
+	}
+
+	public BlockState getFloorOutline() {
+		return this.floorOutline;
+	}
+
+	public BlockState getWall() {
+		return this.wall;
+	}
+
+	public BlockState getWallTop() {
+		return this.wallTop;
 	}
 }

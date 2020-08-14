@@ -159,7 +159,7 @@ public class TerritoryBattleActivePhase {
 				BlockPos landingPos = player.getLandingPos();
 
 				BlockState state = this.world.getBlockState(landingPos);
-				if (state != this.config.getMapConfig().getPlatform()) return;
+				if (state != this.config.getMapConfig().getFloor()) return;
 
 				BlockState territoryState = territory.getTerritoryState();
 				if (this.isNextToState(landingPos, territoryState)) {
@@ -214,10 +214,9 @@ public class TerritoryBattleActivePhase {
 		Vec3d center = map.getPlatform().getCenter();
 
 		double x = center.getX() + Math.sin(theta) * distance;
-		double y = center.getY() + 0.5;
 		double z = center.getZ() - Math.cos(theta) * distance;
 
-		Vec3d pos = Vec3d.ofCenter(new BlockPos(x, y, z));
-		player.teleport(this.world, pos.getX(), y, pos.getZ(), (float) Math.toDegrees(theta), 0);
+		Vec3d pos = Vec3d.ofCenter(new BlockPos(x, 1, z));
+		player.teleport(this.world, pos.getX(), 1, pos.getZ(), (float) Math.toDegrees(theta), 0);
 	}
 }

@@ -86,6 +86,6 @@ public class TerritoryBattleWaitingPhase {
 
 	public static void spawn(ServerWorld world, TerritoryBattleMap map, ServerPlayerEntity player) {
 		Vec3d center = map.getPlatform().getCenter();
-		player.teleport(world, center.getX(), center.getY() + 0.5, center.getZ(), 0, 0);
+		player.teleport(world, center.getX(), 1, center.getZ(), 0, 0);
 	}
 }
