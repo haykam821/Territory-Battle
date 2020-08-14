@@ -13,6 +13,8 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -162,6 +164,8 @@ public class TerritoryBattleActivePhase {
 				BlockState territoryState = territory.getTerritoryState();
 				if (this.isNextToState(landingPos, territoryState)) {
 					this.world.setBlockState(landingPos, territoryState);
+					this.world.playSound(null, landingPos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, 0.5f, 1);
+
 					territory.setSize(territory.getSize() + 1);
 				}
 			});
