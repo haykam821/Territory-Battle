@@ -54,6 +54,7 @@ public class TerritoryBattleActivePhase {
 	private int ticksLeft;
 	private boolean opened;
 	private ServerBossBar timerBar = new ServerBossBar(new LiteralText("Territory Battle"), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
+	private int availableTerritory;
 
 	public TerritoryBattleActivePhase(GameWorld gameWorld, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories) {
 		this.world = gameWorld.getWorld();
@@ -62,6 +63,7 @@ public class TerritoryBattleActivePhase {
 		this.config = config;
 		this.territories = territories;
 		this.ticksLeft = this.config.getTime();
+		this.availableTerritory = this.config.getMapConfig().x * this.config.getMapConfig().z;
 	}
 
 	public static void setRules(Game game) {
@@ -140,6 +142,7 @@ public class TerritoryBattleActivePhase {
 				this.spawn(player, theta, distance);
 
 				this.world.setBlockState(player.getBlockPos().down(), territory.getTerritoryState());
+				this.availableTerritory -= 1;
 			}
 		}
 	}
@@ -167,13 +170,14 @@ public class TerritoryBattleActivePhase {
 					this.world.playSound(null, landingPos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, 0.5f, 1);
 
 					territory.setSize(territory.getSize() + 1);
+					this.availableTerritory -= 1;
 				}
 			});
 		}
 
 		this.ticksLeft -= 1;
  		this.timerBar.setPercent(this.ticksLeft / (float) this.config.getTime());
-		if (this.ticksLeft == 0) {
+		if (this.ticksLeft == 0 || this.availableTerritory <= 0) {
 			Text endingMessage = this.getEndingMessage();
 			for (ServerPlayerEntity player : this.gameWorld.getPlayers()) {
 				player.sendMessage(endingMessage, false);
