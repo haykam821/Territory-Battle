@@ -8,7 +8,6 @@ import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,7 +24,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.game.Game;
 import xyz.nucleoid.plasmid.game.GameWorld;
-import xyz.nucleoid.plasmid.game.event.GameCloseListener;
 import xyz.nucleoid.plasmid.game.event.GameOpenListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
@@ -33,6 +31,7 @@ import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.PlayerRef;
+import xyz.nucleoid.plasmid.widget.BossBarWidget;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +52,7 @@ public class TerritoryBattleActivePhase {
 	private List<PlayerTerritory> territories;
 	private int ticksLeft;
 	private boolean opened;
-	private ServerBossBar timerBar = new ServerBossBar(new LiteralText("Territory Battle"), BossBar.Color.BLUE, BossBar.Style.PROGRESS);
+	private BossBarWidget timerBar;
 	private int availableTerritory;
 
 	public TerritoryBattleActivePhase(GameWorld gameWorld, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories) {
@@ -64,6 +63,11 @@ public class TerritoryBattleActivePhase {
 		this.territories = territories;
 		this.ticksLeft = this.config.getTime();
 		this.availableTerritory = this.config.getMapConfig().x * this.config.getMapConfig().z;
+
+		LiteralText timerTitle = new LiteralText("Territory Battle");
+		this.timerBar = gameWorld.addResource(
+				BossBarWidget.open(gameWorld.getPlayerSet(), timerTitle, BossBar.Color.BLUE, BossBar.Style.PROGRESS)
+		);
 	}
 
 	public static void setRules(Game game) {
@@ -102,17 +106,11 @@ public class TerritoryBattleActivePhase {
 			TerritoryBattleActivePhase.setRules(game);
 
 			// Listeners
-			game.on(GameCloseListener.EVENT, phase::close);
 			game.on(GameOpenListener.EVENT, phase::open);
 			game.on(GameTickListener.EVENT, phase::tick);
 			game.on(PlayerAddListener.EVENT, phase::addPlayer);
 			game.on(PlayerDeathListener.EVENT, phase::onPlayerDeath);
 		});
-	}
-
-	private void close() {
-		this.timerBar.clearPlayers();
-		this.timerBar.setVisible(false);
 	}
 
 	private double getDistance() {
@@ -176,12 +174,9 @@ public class TerritoryBattleActivePhase {
 		}
 
 		this.ticksLeft -= 1;
- 		this.timerBar.setPercent(this.ticksLeft / (float) this.config.getTime());
+ 		this.timerBar.setProgress(this.ticksLeft / (float) this.config.getTime());
 		if (this.ticksLeft == 0 || this.availableTerritory <= 0) {
-			Text endingMessage = this.getEndingMessage();
-			for (ServerPlayerEntity player : this.gameWorld.getPlayers()) {
-				player.sendMessage(endingMessage, false);
-			}
+			this.gameWorld.getPlayerSet().sendMessage(this.getEndingMessage());
 
 			this.gameWorld.close();
 		}
@@ -205,7 +200,6 @@ public class TerritoryBattleActivePhase {
 		if (this.opened) {
 			this.setSpectator(player);
 		}
-		this.timerBar.addPlayer(player);
 	}
 
 	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
