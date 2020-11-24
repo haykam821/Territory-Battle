@@ -1,12 +1,9 @@
 package io.github.haykam821.territorybattle.game.map;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public class TerritoryBattleMapBuilder {
@@ -16,16 +13,14 @@ public class TerritoryBattleMapBuilder {
 		this.config = config;
 	}
 
-	public CompletableFuture<TerritoryBattleMap> create() {
-		return CompletableFuture.supplyAsync(() -> {
-			MapTemplate template = MapTemplate.createEmpty();
-			TerritoryBattleMapConfig mapConfig = this.config.getMapConfig();
+	public TerritoryBattleMap create() {
+		MapTemplate template = MapTemplate.createEmpty();
+		TerritoryBattleMapConfig mapConfig = this.config.getMapConfig();
 
-			BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, new BlockPos(mapConfig.x + 1, 2, mapConfig.z + 1));
-			this.build(bounds, template, mapConfig);
+		BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, new BlockPos(mapConfig.x + 1, 2, mapConfig.z + 1));
+		this.build(bounds, template, mapConfig);
 
-			return new TerritoryBattleMap(template, bounds);
-		}, Util.getMainWorkerExecutor());
+		return new TerritoryBattleMap(template, bounds);
 	}
 	
 	private BlockState getBlockState(BlockPos pos, BlockBounds bounds, TerritoryBattleMapConfig mapConfig) {
@@ -48,7 +43,7 @@ public class TerritoryBattleMapBuilder {
 	}
 
 	public void build(BlockBounds bounds, MapTemplate template, TerritoryBattleMapConfig mapConfig) {
-		for (BlockPos pos : bounds.iterate()) {
+		for (BlockPos pos : bounds) {
 			BlockState state = this.getBlockState(pos, bounds, mapConfig);
 			if (state != null) {
 				template.setBlockState(pos, state);

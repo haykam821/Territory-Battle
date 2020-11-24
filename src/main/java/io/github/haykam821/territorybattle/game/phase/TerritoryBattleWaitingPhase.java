@@ -9,62 +9,61 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import xyz.nucleoid.fantasy.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
+import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameWaitingLobby;
-import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.StartResult;
 import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.event.RequestStartListener;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
-
-import java.util.concurrent.CompletableFuture;
 
 public class TerritoryBattleWaitingPhase {
-	private final GameWorld gameWorld;
+	private final GameSpace gameSpace;
 	private final TerritoryBattleMap map;
 	private final TerritoryBattleConfig config;
 
-	public TerritoryBattleWaitingPhase(GameWorld gameWorld, TerritoryBattleMap map, TerritoryBattleConfig config) {
-		this.gameWorld = gameWorld;
+	public TerritoryBattleWaitingPhase(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config) {
+		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
 	}
 
-	public static CompletableFuture<GameWorld> open(GameOpenContext<TerritoryBattleConfig> context) {
+	public static GameOpenProcedure open(GameOpenContext<TerritoryBattleConfig> context) {
 		TerritoryBattleMapBuilder mapBuilder = new TerritoryBattleMapBuilder(context.getConfig());
 
-		return mapBuilder.create().thenCompose(map -> {
-			BubbleWorldConfig worldConfig = new BubbleWorldConfig()
-				.setGenerator(map.createGenerator(context.getServer()))
-				.setDefaultGameMode(GameMode.SPECTATOR);
-			return context.openWorld(worldConfig).thenApply(gameWorld -> {
-				TerritoryBattleWaitingPhase phase = new TerritoryBattleWaitingPhase(gameWorld, map, context.getConfig());
+		TerritoryBattleMap map = mapBuilder.create();
+		BubbleWorldConfig worldConfig = new BubbleWorldConfig()
+			.setGenerator(map.createGenerator(context.getServer()))
+			.setDefaultGameMode(GameMode.SPECTATOR);
 
-				return GameWaitingLobby.open(gameWorld, context.getConfig().getPlayerConfig(), game -> {
-					TerritoryBattleActivePhase.setRules(game);
+		return context.createOpenProcedure(worldConfig, game -> {
+			TerritoryBattleWaitingPhase phase = new TerritoryBattleWaitingPhase(game.getSpace(), map, context.getConfig());
 
-					// Listeners
-					game.on(PlayerAddListener.EVENT, phase::addPlayer);
-					game.on(PlayerDeathListener.EVENT, phase::onPlayerDeath);
-					game.on(RequestStartListener.EVENT, phase::requestStart);
-				});
-			});
+			GameWaitingLobby.applyTo(game, context.getConfig().getPlayerConfig());
+
+			TerritoryBattleActivePhase.setRules(game);
+
+			// Listeners
+			game.on(PlayerAddListener.EVENT, phase::addPlayer);
+			game.on(PlayerDeathListener.EVENT, phase::onPlayerDeath);
+			game.on(RequestStartListener.EVENT, phase::requestStart);
 		});
 	}
 
 	private StartResult requestStart() {
-		TerritoryBattleActivePhase.open(this.gameWorld, this.map, this.config);
+		TerritoryBattleActivePhase.open(this.gameSpace, this.map, this.config);
 		return StartResult.OK;
 	}
 
 	private void addPlayer(ServerPlayerEntity player) {
-		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
+		TerritoryBattleWaitingPhase.spawn(this.gameSpace.getWorld(), this.map, player);
 	}
 
 	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		// Respawn player
-		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
+		TerritoryBattleWaitingPhase.spawn(this.gameSpace.getWorld(), this.map, player);
 		return ActionResult.SUCCESS;
 	}
 

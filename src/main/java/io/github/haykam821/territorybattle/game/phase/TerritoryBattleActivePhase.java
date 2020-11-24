@@ -22,8 +22,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
-import xyz.nucleoid.plasmid.game.Game;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.GameLogic;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.event.GameOpenListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
@@ -32,9 +32,9 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.plasmid.widget.BossBarWidget;
+import xyz.nucleoid.plasmid.widget.GlobalWidgets;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TerritoryBattleActivePhase {
@@ -46,7 +46,7 @@ public class TerritoryBattleActivePhase {
 	};
 
 	private final ServerWorld world;
-	private final GameWorld gameWorld;
+	private final GameSpace gameSpace;
 	private final TerritoryBattleMap map;
 	private final TerritoryBattleConfig config;
 	private List<PlayerTerritory> territories;
@@ -55,9 +55,9 @@ public class TerritoryBattleActivePhase {
 	private BossBarWidget timerBar;
 	private int availableTerritory;
 
-	public TerritoryBattleActivePhase(GameWorld gameWorld, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories) {
-		this.world = gameWorld.getWorld();
-		this.gameWorld = gameWorld;
+	public TerritoryBattleActivePhase(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
+		this.world = gameSpace.getWorld();
+		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
 		this.territories = territories;
@@ -65,12 +65,10 @@ public class TerritoryBattleActivePhase {
 		this.availableTerritory = this.config.getMapConfig().x * this.config.getMapConfig().z;
 
 		LiteralText timerTitle = new LiteralText("Territory Battle");
-		this.timerBar = gameWorld.addResource(
-				BossBarWidget.open(gameWorld.getPlayerSet(), timerTitle, BossBar.Color.BLUE, BossBar.Style.PROGRESS)
-		);
+		this.timerBar = widgets.addBossBar(timerTitle, BossBar.Color.BLUE, BossBar.Style.PROGRESS);
 	}
 
-	public static void setRules(Game game) {
+	public static void setRules(GameLogic game) {
 		game.setRule(GameRule.CRAFTING, RuleResult.DENY);
 		game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
 		game.setRule(GameRule.HUNGER, RuleResult.DENY);
@@ -78,7 +76,7 @@ public class TerritoryBattleActivePhase {
 		game.setRule(GameRule.PVP, RuleResult.DENY);
 	}
 
-	private static List<PlayerTerritory> getTerritories(Set<ServerPlayerEntity> players, List<Block> platformBlocks) {
+	private static List<PlayerTerritory> getTerritories(Iterable<ServerPlayerEntity> players, List<Block> platformBlocks) {
 		List<PlayerTerritory> territories = Lists.newArrayList();
 
 		int index = 0;
@@ -96,13 +94,15 @@ public class TerritoryBattleActivePhase {
 		return territories;
 	}
 
-	public static void open(GameWorld gameWorld, TerritoryBattleMap map, TerritoryBattleConfig config) {
-		List<Block> platformBlocks = config.getPlatformBlocks().values();
-		List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameWorld.getPlayers(), platformBlocks);
+	public static void open(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config) {
+		gameSpace.openGame(game -> {
+			GlobalWidgets widgets = new GlobalWidgets(game);
 
-		TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameWorld, map, config, territories);
+			List<Block> platformBlocks = config.getPlatformBlocks().values();
+			List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameSpace.getPlayers(), platformBlocks);
 
-		gameWorld.openGame(game -> {
+			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, map, config, territories, widgets);
+
 			TerritoryBattleActivePhase.setRules(game);
 
 			// Listeners
@@ -176,9 +176,9 @@ public class TerritoryBattleActivePhase {
 		this.ticksLeft -= 1;
  		this.timerBar.setProgress(this.ticksLeft / (float) this.config.getTime());
 		if (this.ticksLeft == 0 || this.availableTerritory <= 0) {
-			this.gameWorld.getPlayerSet().sendMessage(this.getEndingMessage());
+			this.gameSpace.getPlayers().sendMessage(this.getEndingMessage());
 
-			this.gameWorld.close();
+			this.gameSpace.close();
 		}
 	}
 
@@ -204,7 +204,7 @@ public class TerritoryBattleActivePhase {
 
 	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		// Respawn player
-		TerritoryBattleWaitingPhase.spawn(this.gameWorld.getWorld(), this.map, player);
+		TerritoryBattleWaitingPhase.spawn(this.gameSpace.getWorld(), this.map, player);
 		return ActionResult.SUCCESS;
 	}
 

@@ -1,5 +1,6 @@
 {
 	"type": "territorybattle:territory_battle",
+	"name": "Territory Battle",
 	"map": {
 		"x": 36,
 		"z": 36
