@@ -1,34 +1,31 @@
 name: Build
-
-on:
+'on':
   push:
-    branches: [ 'master', 'main', '1.16', '!*/*' ]
-
+    branches:
+    - master
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/loom-cache
-            ~/.gradle/caches
-          key: gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            gradle-
-
-      - uses: actions/checkout@v2
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 11
-
-      - name: Build with Gradle
-        run: gradle build
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: artifacts
-          path: build/libs
-          retention-days: 30
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/loom-cache
+          ~/.gradle/caches
+        key: gradle-${{hashFiles('**/*.gradle*')}}
+        restore-keys: gradle-
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: 13
+    - name: Build with Gradle
+      run: gradle build
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts
+        path: build/libs
+        retention-days: 30
