@@ -86,7 +86,7 @@ public class TerritoryBattleActivePhase {
 			territories.add(new PlayerTerritory(PlayerRef.of(player), platformBlock.getDefaultState()));
 
 			index += 1;
-			if (index > platformBlocks.size()) {
+			if (index >= platformBlocks.size()) {
 				index = 0;
 			}
 		}
