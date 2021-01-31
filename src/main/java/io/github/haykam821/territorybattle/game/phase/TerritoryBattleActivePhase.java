@@ -74,6 +74,7 @@ public class TerritoryBattleActivePhase {
 		game.setRule(GameRule.HUNGER, RuleResult.DENY);
 		game.setRule(GameRule.PORTALS, RuleResult.DENY);
 		game.setRule(GameRule.PVP, RuleResult.DENY);
+		game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
 	}
 
 	private static List<PlayerTerritory> getTerritories(Iterable<ServerPlayerEntity> players, List<Block> platformBlocks) {
