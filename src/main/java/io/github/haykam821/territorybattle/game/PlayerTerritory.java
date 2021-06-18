@@ -60,6 +60,15 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 			.formatted(Formatting.GOLD);
 	}
 
+	private String getSidebarEntryName(ServerWorld world) {
+		PlayerEntity player = this.getPlayerRef().getEntity(world);
+		return player == null ? "<Unknown>" : player.getEntityName();
+	}
+
+	public String getSidebarEntryString(ServerWorld world) {
+		return "" + Formatting.DARK_GRAY + Formatting.BOLD + this.getSidebarEntryName(world) + ": " + Formatting.GOLD + this.size;
+	}
+
 	@Override
 	public int compareTo(PlayerTerritory other) {
 		return this.size - other.size;

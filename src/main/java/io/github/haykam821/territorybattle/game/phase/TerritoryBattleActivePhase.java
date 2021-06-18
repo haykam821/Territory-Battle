@@ -3,6 +3,7 @@ package io.github.haykam821.territorybattle.game.phase;
 import com.google.common.collect.Lists;
 import io.github.haykam821.territorybattle.game.PlayerTerritory;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
+import io.github.haykam821.territorybattle.game.TerritoryBattleSidebar;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMap;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
 import net.minecraft.block.Block;
@@ -54,6 +55,7 @@ public class TerritoryBattleActivePhase {
 	private int ticksLeft;
 	private boolean opened;
 	private BossBarWidget timerBar;
+	private final TerritoryBattleSidebar sidebar;
 	private int availableTerritory;
 
 	public TerritoryBattleActivePhase(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
@@ -67,6 +69,7 @@ public class TerritoryBattleActivePhase {
 
 		LiteralText timerTitle = new LiteralText("Territory Battle");
 		this.timerBar = widgets.addBossBar(timerTitle, BossBar.Color.BLUE, BossBar.Style.PROGRESS);
+		this.sidebar = new TerritoryBattleSidebar(widgets, this, timerTitle);
 	}
 
 	public static void setRules(GameLogic game) {
@@ -145,6 +148,8 @@ public class TerritoryBattleActivePhase {
 				this.availableTerritory -= 1;
 			}
 		}
+
+		this.sidebar.update();
 	}
 
 	private boolean isNextToState(BlockPos pos, BlockState state) {
@@ -157,8 +162,10 @@ public class TerritoryBattleActivePhase {
 	}
 
 	private void tick() {
+		boolean territoryUpdated = false;
 		for (PlayerTerritory territory : this.territories) {
-			territory.getPlayerRef().ifOnline(this.world, player -> {
+			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
+			if (player != null) {
 				BlockPos landingPos = player.getLandingPos();
 
 				BlockState state = this.world.getBlockState(landingPos);
@@ -171,8 +178,14 @@ public class TerritoryBattleActivePhase {
 
 					territory.setSize(territory.getSize() + 1);
 					this.availableTerritory -= 1;
+
+					territoryUpdated = true;
 				}
-			});
+			}
+		}
+
+		if (territoryUpdated) {
+			this.sidebar.update();
 		}
 
 		this.ticksLeft -= 1;
@@ -218,5 +231,13 @@ public class TerritoryBattleActivePhase {
 
 		Vec3d pos = Vec3d.ofCenter(new BlockPos(x, 1, z));
 		player.teleport(this.world, pos.getX(), 1, pos.getZ(), (float) Math.toDegrees(theta), 0);
+	}
+
+	public ServerWorld getWorld() {
+		return this.world;
+	}
+
+	public List<PlayerTerritory> getTerritories() {
+		return this.territories;
 	}
 }
