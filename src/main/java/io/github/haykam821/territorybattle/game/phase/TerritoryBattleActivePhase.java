@@ -169,7 +169,7 @@ public class TerritoryBattleActivePhase {
 				BlockPos landingPos = player.getLandingPos();
 
 				BlockState state = this.world.getBlockState(landingPos);
-				if (state != this.config.getMapConfig().getFloor()) return;
+				if (state != this.config.getMapConfig().getFloor()) continue;
 
 				BlockState territoryState = territory.getTerritoryState();
 				if (this.isNextToState(landingPos, territoryState)) {
