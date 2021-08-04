@@ -10,6 +10,17 @@
 		"minecraft:purple_wool",
 		"minecraft:blue_wool",
 		"minecraft:green_wool",
-		"minecraft:red_wool"
+		"minecraft:red_wool",
+		"minecraft:orange_terracotta",
+		"minecraft:magenta_terracotta",
+		"minecraft:light_blue_terracotta",
+		"minecraft:yellow_terracotta",
+		"minecraft:lime_terracotta",
+		"minecraft:pink_terracotta",
+		"minecraft:cyan_terracotta",
+		"minecraft:purple_terracotta",
+		"minecraft:blue_terracotta",
+		"minecraft:green_terracotta",
+		"minecraft:red_terracotta"
 	]
 }
