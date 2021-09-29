@@ -2,8 +2,8 @@ package io.github.haykam821.territorybattle.game;
 
 import io.github.haykam821.territorybattle.game.phase.TerritoryBattleActivePhase;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.widget.GlobalWidgets;
-import xyz.nucleoid.plasmid.widget.SidebarWidget;
+import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
 
 public class TerritoryBattleSidebar {
 	private final SidebarWidget widget;
@@ -23,9 +23,9 @@ public class TerritoryBattleSidebar {
 			this.phase.getTerritories().stream()
 				.sorted()
 				.map(territory -> {
-					return territory.getSidebarEntryString(this.phase.getWorld());
+					return territory.getSidebarEntryText(this.phase.getWorld());
 				})
-				.forEach(content::writeLine);
+				.forEach(content::add);
 		});
 	}
 }

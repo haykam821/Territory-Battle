@@ -41,12 +41,11 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	}
 
 	public void giveTerritoryStack(ServerPlayerEntity player) {
-		player.inventory.setStack(8, this.getTerritoryStack());
+		player.getInventory().setStack(8, this.getTerritoryStack());
 
 		// Update inventory
 		player.currentScreenHandler.sendContentUpdates();
-		player.playerScreenHandler.onContentChanged(player.inventory);
-		player.updateCursorStack();
+		player.playerScreenHandler.onContentChanged(player.getInventory());
 	}
 
 	public Text getWinMessage(ServerWorld world) {
@@ -65,8 +64,11 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 		return player == null ? "<Unknown>" : player.getEntityName();
 	}
 
-	public String getSidebarEntryString(ServerWorld world) {
-		return "" + Formatting.DARK_GRAY + Formatting.BOLD + this.getSidebarEntryName(world) + ": " + Formatting.GOLD + this.size;
+	public Text getSidebarEntryText(ServerWorld world) {
+		Text sizeText = new LiteralText(this.size + "").formatted(Formatting.GOLD);
+		return new LiteralText(this.getSidebarEntryName(world) + ": ").append(sizeText).styled(style -> {
+			return style.withBold(true).withColor(Formatting.DARK_GRAY);
+		});
 	}
 
 	@Override

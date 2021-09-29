@@ -5,11 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.haykam821.territorybattle.Main;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
-import net.fabricmc.fabric.api.tag.TagRegistry;
+import net.fabricmc.fabric.api.tag.TagFactory;
 import net.minecraft.block.Block;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.config.PlayerConfig;
+import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 
 public class TerritoryBattleConfig {
 	public static final Codec<TerritoryBattleConfig> CODEC = RecordCodecBuilder.create(instance -> {
@@ -46,7 +46,7 @@ public class TerritoryBattleConfig {
 	}
 
 	public Tag<Block> getPlatformBlocks() {
-		Tag<Block> tag = TagRegistry.block(this.playerBlocksId);
+		Tag<Block> tag = TagFactory.BLOCK.create(this.playerBlocksId);
 		return tag == null ? Main.PLAYER_BLOCKS : tag;
 	}
 	

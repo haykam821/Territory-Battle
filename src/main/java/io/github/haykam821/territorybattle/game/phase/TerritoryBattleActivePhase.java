@@ -1,6 +1,10 @@
 package io.github.haykam821.territorybattle.game.phase;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.Lists;
+
 import io.github.haykam821.territorybattle.game.PlayerTerritory;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.TerritoryBattleSidebar;
@@ -23,21 +27,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameLogic;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.event.GameOpenListener;
-import xyz.nucleoid.plasmid.game.event.GameTickListener;
-import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
-import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
-import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.PlayerRef;
-import xyz.nucleoid.plasmid.widget.BossBarWidget;
-import xyz.nucleoid.plasmid.widget.GlobalWidgets;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public class TerritoryBattleActivePhase {
 	private static final Direction[] NEXT_TO_DIRECTIONS = new Direction[] {
@@ -58,8 +57,8 @@ public class TerritoryBattleActivePhase {
 	private final TerritoryBattleSidebar sidebar;
 	private int availableTerritory;
 
-	public TerritoryBattleActivePhase(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
-		this.world = gameSpace.getWorld();
+	public TerritoryBattleActivePhase(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
+		this.world = world;
 		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
@@ -72,13 +71,13 @@ public class TerritoryBattleActivePhase {
 		this.sidebar = new TerritoryBattleSidebar(widgets, this, timerTitle);
 	}
 
-	public static void setRules(GameLogic game) {
-		game.setRule(GameRule.CRAFTING, RuleResult.DENY);
-		game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-		game.setRule(GameRule.HUNGER, RuleResult.DENY);
-		game.setRule(GameRule.PORTALS, RuleResult.DENY);
-		game.setRule(GameRule.PVP, RuleResult.DENY);
-		game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+	public static void setRules(GameActivity activity) {
+		activity.deny(GameRuleType.CRAFTING);
+		activity.deny(GameRuleType.FALL_DAMAGE);
+		activity.deny(GameRuleType.HUNGER);
+		activity.deny(GameRuleType.PORTALS);
+		activity.deny(GameRuleType.PVP);
+		activity.deny(GameRuleType.THROW_ITEMS);
 	}
 
 	private static List<PlayerTerritory> getTerritories(Iterable<ServerPlayerEntity> players, List<Block> platformBlocks) {
@@ -99,22 +98,22 @@ public class TerritoryBattleActivePhase {
 		return territories;
 	}
 
-	public static void open(GameSpace gameSpace, TerritoryBattleMap map, TerritoryBattleConfig config) {
-		gameSpace.openGame(game -> {
-			GlobalWidgets widgets = new GlobalWidgets(game);
+	public static void open(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config) {
+		gameSpace.setActivity(activity -> {
+			GlobalWidgets widgets = GlobalWidgets.addTo(activity);
 
 			List<Block> platformBlocks = config.getPlatformBlocks().values();
 			List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameSpace.getPlayers(), platformBlocks);
 
-			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, map, config, territories, widgets);
+			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, world, map, config, territories, widgets);
 
-			TerritoryBattleActivePhase.setRules(game);
+			TerritoryBattleActivePhase.setRules(activity);
 
 			// Listeners
-			game.on(GameOpenListener.EVENT, phase::open);
-			game.on(GameTickListener.EVENT, phase::tick);
-			game.on(PlayerAddListener.EVENT, phase::addPlayer);
-			game.on(PlayerDeathListener.EVENT, phase::onPlayerDeath);
+			activity.listen(GameActivityEvents.ENABLE, phase::enable);
+			activity.listen(GameActivityEvents.TICK, phase::tick);
+			activity.listen(GamePlayerEvents.ADD, phase::addPlayer);
+			activity.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
 		});
 	}
 
@@ -128,7 +127,7 @@ public class TerritoryBattleActivePhase {
 		}
 	}
 
-	private void open() {
+	private void enable() {
 		this.opened = true;
 
 		double distance = this.getDistance();
@@ -136,10 +135,10 @@ public class TerritoryBattleActivePhase {
 			PlayerTerritory territory = this.territories.get(i);
 			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
 			if (player != null) {
-				player.inventory.clear();
+				player.getInventory().clear();
 				territory.giveTerritoryStack(player);
 
-				player.setGameMode(GameMode.ADVENTURE);
+				player.changeGameMode(GameMode.ADVENTURE);
 
 				double theta = ((double) i / this.territories.size()) * 2 * Math.PI;
 				this.spawn(player, theta, distance);
@@ -207,8 +206,8 @@ public class TerritoryBattleActivePhase {
 		return winnerTerritory.getWinMessage(this.world);
 	}
 
-	private void setSpectator(PlayerEntity player) {
-		player.setGameMode(GameMode.SPECTATOR);
+	private void setSpectator(ServerPlayerEntity player) {
+		player.changeGameMode(GameMode.SPECTATOR);
 	}
 
 	private void addPlayer(ServerPlayerEntity player) {
@@ -219,12 +218,12 @@ public class TerritoryBattleActivePhase {
 
 	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
 		// Respawn player
-		TerritoryBattleWaitingPhase.spawn(this.gameSpace.getWorld(), this.map, player);
+		TerritoryBattleWaitingPhase.spawn(this.world, this.map, player);
 		return ActionResult.SUCCESS;
 	}
 
 	public void spawn(ServerPlayerEntity player, double theta, double distance) {
-		Vec3d center = map.getPlatform().getCenter();
+		Vec3d center = map.getPlatform().center();
 
 		double x = center.getX() + Math.sin(theta) * distance;
 		double z = center.getZ() - Math.cos(theta) * distance;
