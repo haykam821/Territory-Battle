@@ -34,6 +34,8 @@ import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.PlayerOffer;
+import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
@@ -52,7 +54,6 @@ public class TerritoryBattleActivePhase {
 	private final TerritoryBattleConfig config;
 	private List<PlayerTerritory> territories;
 	private int ticksLeft;
-	private boolean opened;
 	private BossBarWidget timerBar;
 	private final TerritoryBattleSidebar sidebar;
 	private int availableTerritory;
@@ -112,7 +113,7 @@ public class TerritoryBattleActivePhase {
 			// Listeners
 			activity.listen(GameActivityEvents.ENABLE, phase::enable);
 			activity.listen(GameActivityEvents.TICK, phase::tick);
-			activity.listen(GamePlayerEvents.ADD, phase::addPlayer);
+			activity.listen(GamePlayerEvents.OFFER, phase::offerPlayer);
 			activity.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
 		});
 	}
@@ -128,8 +129,6 @@ public class TerritoryBattleActivePhase {
 	}
 
 	private void enable() {
-		this.opened = true;
-
 		double distance = this.getDistance();
 		for (int i = 0; i < this.territories.size(); i++) {
 			PlayerTerritory territory = this.territories.get(i);
@@ -210,10 +209,10 @@ public class TerritoryBattleActivePhase {
 		player.changeGameMode(GameMode.SPECTATOR);
 	}
 
-	private void addPlayer(ServerPlayerEntity player) {
-		if (this.opened) {
-			this.setSpectator(player);
-		}
+	private PlayerOfferResult offerPlayer(PlayerOffer offer) {
+		return offer.accept(this.world, this.map.getWaitingSpawnPos()).and(() -> {
+			this.setSpectator(offer.player());
+		});
 	}
 
 	private ActionResult onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
