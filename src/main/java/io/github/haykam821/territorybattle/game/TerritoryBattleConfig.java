@@ -3,12 +3,11 @@ package io.github.haykam821.territorybattle.game;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import io.github.haykam821.territorybattle.Main;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
-import net.fabricmc.fabric.api.tag.TagFactory;
 import net.minecraft.block.Block;
-import net.minecraft.tag.Tag;
-import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryCodecs;
+import net.minecraft.util.registry.RegistryEntryList;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 
 public class TerritoryBattleConfig {
@@ -16,20 +15,20 @@ public class TerritoryBattleConfig {
 		return instance.group(
 			TerritoryBattleMapConfig.CODEC.fieldOf("map").forGetter(TerritoryBattleConfig::getMapConfig),
 			PlayerConfig.CODEC.fieldOf("players").forGetter(TerritoryBattleConfig::getPlayerConfig),
-			Identifier.CODEC.fieldOf("playerBlocks").forGetter(TerritoryBattleConfig::getPlayerBlocksId),
+			RegistryCodecs.entryList(Registry.BLOCK_KEY).fieldOf("player_blocks").forGetter(TerritoryBattleConfig::getPlayerBlocks),
 			Codec.INT.optionalFieldOf("time", 20 * 90).forGetter(TerritoryBattleConfig::getTime)
 		).apply(instance, TerritoryBattleConfig::new);
 	});
 
 	private final TerritoryBattleMapConfig mapConfig;
 	private final PlayerConfig playerConfig;
-	private final Identifier playerBlocksId;
+	private final RegistryEntryList<Block> playerBlocks;
 	private final int time;
 
-	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, Identifier playerBlocksId, int time) {
+	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, RegistryEntryList<Block> playerBlocks, int time) {
 		this.mapConfig = mapConfig;
 		this.playerConfig = playerConfig;
-		this.playerBlocksId = playerBlocksId;
+		this.playerBlocks = playerBlocks;
 		this.time = time;
 	}
 
@@ -41,13 +40,8 @@ public class TerritoryBattleConfig {
 		return this.playerConfig;
 	}
 
-	public Identifier getPlayerBlocksId() {
-		return playerBlocksId;
-	}
-
-	public Tag<Block> getPlatformBlocks() {
-		Tag<Block> tag = TagFactory.BLOCK.create(this.playerBlocksId);
-		return tag == null ? Main.PLAYER_BLOCKS : tag;
+	public RegistryEntryList<Block> getPlayerBlocks() {
+		return this.playerBlocks;
 	}
 	
 	public int getTime() {

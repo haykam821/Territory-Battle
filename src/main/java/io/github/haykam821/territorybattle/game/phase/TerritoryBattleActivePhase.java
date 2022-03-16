@@ -26,6 +26,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.RegistryEntryList;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
@@ -81,12 +82,16 @@ public class TerritoryBattleActivePhase {
 		activity.deny(GameRuleType.THROW_ITEMS);
 	}
 
-	private static List<PlayerTerritory> getTerritories(Iterable<ServerPlayerEntity> players, List<Block> platformBlocks) {
+	private static List<PlayerTerritory> getTerritories(Iterable<ServerPlayerEntity> players, RegistryEntryList<Block> platformBlocks) {
 		List<PlayerTerritory> territories = Lists.newArrayList();
+
+		if (platformBlocks.size() == 0) {
+			throw new IllegalStateException("No player block available from " + platformBlocks);
+		}
 
 		int index = 0;
 		for (PlayerEntity player : players) {
-			Block platformBlock = platformBlocks.get(index);
+			Block platformBlock = platformBlocks.get(index).value();
 
 			territories.add(new PlayerTerritory(PlayerRef.of(player), platformBlock.getDefaultState()));
 
@@ -103,8 +108,7 @@ public class TerritoryBattleActivePhase {
 		gameSpace.setActivity(activity -> {
 			GlobalWidgets widgets = GlobalWidgets.addTo(activity);
 
-			List<Block> platformBlocks = config.getPlatformBlocks().values();
-			List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameSpace.getPlayers(), platformBlocks);
+			List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameSpace.getPlayers(), config.getPlayerBlocks());
 
 			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, world, map, config, territories, widgets);
 
