@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.util.PlayerRef;
@@ -51,10 +50,10 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	public Text getWinMessage(ServerWorld world) {
 		PlayerEntity winner = this.getPlayerRef().getEntity(world);
 		if (winner == null) {
-			return new LiteralText("The winner is offline!").formatted(Formatting.GOLD);
+			return Text.literal("The winner is offline!").formatted(Formatting.GOLD);
 		}
 
-		return winner.getDisplayName().shallowCopy()
+		return winner.getDisplayName().copy()
 			.append(" has won the game with a territory of " + this.getSize() + " blocks!")
 			.formatted(Formatting.GOLD);
 	}
@@ -65,8 +64,8 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	}
 
 	public Text getSidebarEntryText(ServerWorld world) {
-		Text sizeText = new LiteralText(this.size + "").formatted(Formatting.GOLD);
-		return new LiteralText(this.getSidebarEntryName(world) + ": ").append(sizeText).styled(style -> {
+		Text sizeText = Text.literal(this.size + "").formatted(Formatting.GOLD);
+		return Text.literal(this.getSidebarEntryName(world) + ": ").append(sizeText).styled(style -> {
 			return style.withBold(true).withColor(Formatting.DARK_GRAY);
 		});
 	}

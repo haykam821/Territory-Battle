@@ -16,7 +16,6 @@
 			"io.github.haykam821.territorybattle.Main"
 		]
 	},
-	"accessWidener": "territorybattle.accesswidener",
 	"license": "MIT",
 	"icon": "assets/territorybattle/icon.png",
 	"depends": {

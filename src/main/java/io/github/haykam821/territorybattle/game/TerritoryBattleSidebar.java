@@ -10,7 +10,7 @@ public class TerritoryBattleSidebar {
 	private final TerritoryBattleActivePhase phase;
 
 	public TerritoryBattleSidebar(GlobalWidgets widgets, TerritoryBattleActivePhase phase, Text title) {
-		Text name = title.shallowCopy().styled(style -> {
+		Text name = title.copy().styled(style -> {
 			return style.withBold(true);
 		});
 		this.widget = widgets.addSidebar(name);
