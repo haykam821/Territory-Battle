@@ -15,18 +15,17 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.RegistryEntryList;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
@@ -68,7 +67,7 @@ public class TerritoryBattleActivePhase {
 		this.ticksLeft = this.config.getTime();
 		this.availableTerritory = this.config.getMapConfig().x * this.config.getMapConfig().z;
 
-		LiteralText timerTitle = new LiteralText("Territory Battle");
+		Text timerTitle = Text.literal("Territory Battle");
 		this.timerBar = widgets.addBossBar(timerTitle, BossBar.Color.BLUE, BossBar.Style.PROGRESS);
 		this.sidebar = new TerritoryBattleSidebar(widgets, this, timerTitle);
 	}
@@ -168,15 +167,15 @@ public class TerritoryBattleActivePhase {
 		for (PlayerTerritory territory : this.territories) {
 			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
 			if (player != null) {
-				BlockPos landingPos = player.getLandingPos();
+				BlockPos steppingPos = player.getSteppingPos();
 
-				BlockState state = this.world.getBlockState(landingPos);
+				BlockState state = this.world.getBlockState(steppingPos);
 				if (state != this.config.getMapConfig().getFloor()) continue;
 
 				BlockState territoryState = territory.getTerritoryState();
-				if (this.isNextToState(landingPos, territoryState)) {
-					this.world.setBlockState(landingPos, territoryState);
-					this.world.playSound(null, landingPos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, 0.5f, 1);
+				if (this.isNextToState(steppingPos, territoryState)) {
+					this.world.setBlockState(steppingPos, territoryState);
+					this.world.playSound(null, steppingPos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, 0.5f, 1);
 
 					territory.setSize(territory.getSize() + 1);
 					this.availableTerritory -= 1;
@@ -201,7 +200,7 @@ public class TerritoryBattleActivePhase {
 
 	private Text getEndingMessage() {
 		if (this.territories.size() == 0) {
-			return new LiteralText("Nobody won the game!").formatted(Formatting.RED);
+			return Text.literal("Nobody won the game!").formatted(Formatting.RED);
 		}
 
 		List<PlayerTerritory> sortedTerritories = this.territories.stream().sorted().collect(Collectors.toList());

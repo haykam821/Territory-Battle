@@ -5,9 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapConfig;
 import net.minecraft.block.Block;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryCodecs;
-import net.minecraft.util.registry.RegistryEntryList;
+import net.minecraft.registry.RegistryCodecs;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntryList;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 
 public class TerritoryBattleConfig {
@@ -15,7 +15,7 @@ public class TerritoryBattleConfig {
 		return instance.group(
 			TerritoryBattleMapConfig.CODEC.fieldOf("map").forGetter(TerritoryBattleConfig::getMapConfig),
 			PlayerConfig.CODEC.fieldOf("players").forGetter(TerritoryBattleConfig::getPlayerConfig),
-			RegistryCodecs.entryList(Registry.BLOCK_KEY).fieldOf("player_blocks").forGetter(TerritoryBattleConfig::getPlayerBlocks),
+			RegistryCodecs.entryList(RegistryKeys.BLOCK).fieldOf("player_blocks").forGetter(TerritoryBattleConfig::getPlayerBlocks),
 			Codec.INT.optionalFieldOf("time", 20 * 90).forGetter(TerritoryBattleConfig::getTime)
 		).apply(instance, TerritoryBattleConfig::new);
 	});
