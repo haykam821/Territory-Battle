@@ -57,6 +57,7 @@ public class TerritoryBattleActivePhase {
 	private BossBarWidget timerBar;
 	private final TerritoryBattleSidebar sidebar;
 	private int availableTerritory;
+	private int ticksUntilClose = -1;
 
 	public TerritoryBattleActivePhase(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
 		this.world = world;
@@ -163,6 +164,16 @@ public class TerritoryBattleActivePhase {
 	}
 
 	private void tick() {
+		// Decrease ticks until game end to zero
+		if (this.isGameEnding()) {
+			if (this.ticksUntilClose == 0) {
+				this.gameSpace.close(GameCloseReason.FINISHED);
+			}
+
+			this.ticksUntilClose -= 1;
+			return;
+		}
+
 		boolean territoryUpdated = false;
 		for (PlayerTerritory territory : this.territories) {
 			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
@@ -194,7 +205,7 @@ public class TerritoryBattleActivePhase {
 		if (this.ticksLeft == 0 || this.availableTerritory <= 0) {
 			this.gameSpace.getPlayers().sendMessage(this.getEndingMessage());
 
-			this.gameSpace.close(GameCloseReason.FINISHED);
+			this.ticksUntilClose = this.config.getTicksUntilClose().get(this.world.getRandom());
 		}
 	}
 
@@ -206,6 +217,10 @@ public class TerritoryBattleActivePhase {
 		List<PlayerTerritory> sortedTerritories = this.territories.stream().sorted().collect(Collectors.toList());
 		PlayerTerritory winnerTerritory = sortedTerritories.get(sortedTerritories.size() - 1);
 		return winnerTerritory.getWinMessage(this.world);
+	}
+
+	private boolean isGameEnding() {
+		return this.ticksUntilClose >= 0;
 	}
 
 	private void setSpectator(ServerPlayerEntity player) {
