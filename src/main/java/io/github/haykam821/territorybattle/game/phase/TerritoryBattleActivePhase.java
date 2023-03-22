@@ -245,8 +245,7 @@ public class TerritoryBattleActivePhase {
 		double x = center.getX() + Math.sin(theta) * distance;
 		double z = center.getZ() - Math.cos(theta) * distance;
 
-		Vec3d pos = Vec3d.ofCenter(new BlockPos(x, 1, z));
-		player.teleport(this.world, pos.getX(), 1, pos.getZ(), (float) Math.toDegrees(theta), 0);
+		player.teleport(this.world, Math.floor(x) + 0.5, 1, Math.floor(z) + 0.5, (float) Math.toDegrees(theta), 0);
 	}
 
 	public ServerWorld getWorld() {
