@@ -1,5 +1,6 @@
 {
 	"type": "territorybattle:territory_battle",
+	"icon": "minecraft:white_wool",
 	"map": {
 		"x": 36,
 		"z": 36
