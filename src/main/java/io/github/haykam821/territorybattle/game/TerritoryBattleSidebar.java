@@ -1,5 +1,7 @@
 package io.github.haykam821.territorybattle.game;
 
+import java.util.Comparator;
+
 import io.github.haykam821.territorybattle.game.phase.TerritoryBattleActivePhase;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
@@ -21,7 +23,7 @@ public class TerritoryBattleSidebar {
 	public void update() {
 		this.widget.set(content -> {
 			this.phase.getTerritories().stream()
-				.sorted()
+				.sorted(Comparator.reverseOrder())
 				.map(territory -> {
 					return territory.getSidebarEntryText(this.phase.getWorld());
 				})
