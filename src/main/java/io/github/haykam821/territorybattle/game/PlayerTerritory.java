@@ -3,6 +3,8 @@ package io.github.haykam821.territorybattle.game;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.scoreboard.number.FixedNumberFormat;
+import net.minecraft.scoreboard.number.NumberFormat;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -60,14 +62,16 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 
 	private String getSidebarEntryName(ServerWorld world) {
 		PlayerEntity player = this.getPlayerRef().getEntity(world);
-		return player == null ? "<Unknown>" : player.getEntityName();
+		return player == null ? "<Unknown>" : player.getNameForScoreboard();
 	}
 
 	public Text getSidebarEntryText(ServerWorld world) {
-		Text sizeText = Text.literal(this.size + "").formatted(Formatting.GOLD);
-		return Text.literal(this.getSidebarEntryName(world) + ": ").append(sizeText).styled(style -> {
-			return style.withBold(true).withColor(Formatting.DARK_GRAY);
-		});
+		return Text.literal(this.getSidebarEntryName(world)).setStyle(TerritoryBattleSidebar.NAME_STYLE);
+	}
+
+	public NumberFormat getSidebarNumberFormat() {
+		Text text = Text.literal(this.size + "").setStyle(TerritoryBattleSidebar.NUMBER_STYLE);
+		return new FixedNumberFormat(text);
 	}
 
 	@Override
