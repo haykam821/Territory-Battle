@@ -16,6 +16,9 @@
 			"io.github.haykam821.territorybattle.Main"
 		]
 	},
+	"mixins": [
+		"territorybattle.mixin.json"
+	],
 	"license": "MIT",
 	"icon": "assets/territorybattle/icon.png",
 	"depends": {

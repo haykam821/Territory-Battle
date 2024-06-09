@@ -26,15 +26,11 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	}
 
 	public BlockState getTerritoryState() {
-		return territoryState;
+		return this.territoryState;
 	}
 
-	public int getSize() {
-		return this.size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
+	public void incrementSize() {
+		this.size += 1;
 	}
 
 	private ItemStack getTerritoryStack() {
@@ -56,7 +52,7 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 		}
 
 		return winner.getDisplayName().copy()
-			.append(" has won the game with a territory of " + this.getSize() + " blocks!")
+			.append(" has won the game with a territory of " + this.size + " blocks!")
 			.formatted(Formatting.GOLD);
 	}
 
@@ -81,6 +77,6 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 
 	@Override
 	public String toString() {
-		return "PlayerTerritory{playerRef=" + this.getPlayerRef() + ", territoryState=" + this.getTerritoryState() + ", size=" + this.getSize() + "}";
+		return "PlayerTerritory{playerRef=" + this.getPlayerRef() + ", territoryState=" + this.getTerritoryState() + ", size=" + this.size + "}";
 	}
 }

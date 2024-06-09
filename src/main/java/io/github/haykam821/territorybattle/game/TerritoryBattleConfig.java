@@ -20,6 +20,7 @@ public class TerritoryBattleConfig {
 			PlayerConfig.CODEC.fieldOf("players").forGetter(TerritoryBattleConfig::getPlayerConfig),
 			IntProvider.NON_NEGATIVE_CODEC.optionalFieldOf("ticks_until_close", ConstantIntProvider.create(SharedConstants.TICKS_PER_SECOND * 5)).forGetter(TerritoryBattleConfig::getTicksUntilClose),
 			RegistryCodecs.entryList(RegistryKeys.BLOCK).fieldOf("player_blocks").forGetter(TerritoryBattleConfig::getPlayerBlocks),
+			Codec.BOOL.optionalFieldOf("flood_fill", true).forGetter(TerritoryBattleConfig::shouldFloodFill),
 			Codec.INT.optionalFieldOf("time", 20 * 90).forGetter(TerritoryBattleConfig::getTime)
 		).apply(instance, TerritoryBattleConfig::new);
 	});
@@ -28,13 +29,15 @@ public class TerritoryBattleConfig {
 	private final PlayerConfig playerConfig;
 	private final IntProvider ticksUntilClose;
 	private final RegistryEntryList<Block> playerBlocks;
+	private final boolean floodFill;
 	private final int time;
 
-	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, RegistryEntryList<Block> playerBlocks, int time) {
+	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, RegistryEntryList<Block> playerBlocks, boolean floodFill, int time) {
 		this.mapConfig = mapConfig;
 		this.playerConfig = playerConfig;
 		this.ticksUntilClose = ticksUntilClose;
 		this.playerBlocks = playerBlocks;
+		this.floodFill = floodFill;
 		this.time = time;
 	}
 
@@ -53,7 +56,11 @@ public class TerritoryBattleConfig {
 	public RegistryEntryList<Block> getPlayerBlocks() {
 		return this.playerBlocks;
 	}
-	
+
+	public boolean shouldFloodFill() {
+		return this.floodFill;
+	}
+
 	public int getTime() {
 		return this.time;
 	}

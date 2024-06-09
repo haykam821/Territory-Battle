@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import io.github.haykam821.territorybattle.enclosure.EnclosureResult;
+import io.github.haykam821.territorybattle.enclosure.EnclosureTraversal;
 import io.github.haykam821.territorybattle.game.PlayerTerritory;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
 import io.github.haykam821.territorybattle.game.TerritoryBattleSidebar;
@@ -177,22 +179,9 @@ public class TerritoryBattleActivePhase {
 		boolean territoryUpdated = false;
 		for (PlayerTerritory territory : this.territories) {
 			ServerPlayerEntity player = territory.getPlayerRef().getEntity(this.world);
-			if (player != null) {
-				BlockPos steppingPos = player.getSteppingPos();
 
-				BlockState state = this.world.getBlockState(steppingPos);
-				if (state != this.config.getMapConfig().getFloor()) continue;
-
-				BlockState territoryState = territory.getTerritoryState();
-				if (this.isNextToState(steppingPos, territoryState)) {
-					this.world.setBlockState(steppingPos, territoryState);
-					this.world.playSound(null, steppingPos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, 0.5f, 1);
-
-					territory.setSize(territory.getSize() + 1);
-					this.availableTerritory -= 1;
-
-					territoryUpdated = true;
-				}
+			if (player != null && this.tickTerritory(territory, player)) {
+				territoryUpdated = true;
 			}
 		}
 
@@ -207,6 +196,43 @@ public class TerritoryBattleActivePhase {
 
 			this.ticksUntilClose = this.config.getTicksUntilClose().get(this.world.getRandom());
 		}
+	}
+
+	private boolean tickTerritory(PlayerTerritory territory, ServerPlayerEntity player) {
+		BlockPos steppingPos = player.getSteppingPos();
+
+		BlockState state = this.world.getBlockState(steppingPos);
+		BlockState floorState = this.config.getMapConfig().getFloor();
+		if (state != floorState) return false;
+
+		BlockState territoryState = territory.getTerritoryState();
+		if (!this.isNextToState(steppingPos, territoryState)) return false;
+
+		this.placeTerritory(steppingPos, territory, 0.5f);
+
+		if (this.config.shouldFloodFill()) {
+			BlockPos.Mutable enclosedPos = new BlockPos.Mutable();
+
+			for (Direction direction : NEXT_TO_DIRECTIONS) {
+				BlockPos enclosablePos = steppingPos.offset(direction);
+				EnclosureResult result = EnclosureTraversal.findEnclosure(this.world, enclosablePos, this.map.getTerritoryBounds(), territoryState, floorState);
+
+				for (long pos : result) {
+					enclosedPos.set(pos);
+					this.placeTerritory(enclosedPos, territory, 0.05f);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private void placeTerritory(BlockPos pos, PlayerTerritory territory, float volume) {
+		this.world.setBlockState(pos, territory.getTerritoryState());
+		this.world.playSound(null, pos, SoundEvents.BLOCK_SNOW_PLACE, SoundCategory.BLOCKS, volume, 1);
+
+		territory.incrementSize();
+		this.availableTerritory -= 1;
 	}
 
 	private Text getEndingMessage() {
