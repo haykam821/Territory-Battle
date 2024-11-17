@@ -27,6 +27,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -49,6 +50,8 @@ public class TerritoryBattleActivePhase {
 		Direction.SOUTH,
 		Direction.WEST
 	};
+
+	private static final int INTERPOLATION_STEPS = 30;
 
 	private final ServerWorld world;
 	private final GameSpace gameSpace;
@@ -183,6 +186,8 @@ public class TerritoryBattleActivePhase {
 			if (player != null && this.tickTerritory(territory, player)) {
 				territoryUpdated = true;
 			}
+
+			territory.updatePreviousPos(player);
 		}
 
 		if (territoryUpdated) {
@@ -199,8 +204,35 @@ public class TerritoryBattleActivePhase {
 	}
 
 	private boolean tickTerritory(PlayerTerritory territory, ServerPlayerEntity player) {
-		BlockPos steppingPos = player.getSteppingPos();
+		boolean territoryUpdated = false;
 
+		Vec3d start = new Vec3d(player.prevX, player.prevY - MathHelper.EPSILON, player.prevZ);
+		Vec3d end = territory.getPreviousPos(player).subtract(0, MathHelper.EPSILON, 0);
+
+		if (!start.equals(end)) {
+			double relativeX = end.getX() - start.getX();
+			double relativeY = end.getY() - start.getY();
+			double relativeZ = end.getZ() - start.getZ();
+
+			BlockPos.Mutable steppingPos = new BlockPos.Mutable();
+
+			for (int step = 1; step <= INTERPOLATION_STEPS; step += 1) {
+				double progress = step / (double) INTERPOLATION_STEPS;
+
+				steppingPos.setX((int) (start.getX() + relativeX * progress));
+				steppingPos.setY((int) (start.getY() + relativeY * progress));
+				steppingPos.setZ((int) (start.getZ() + relativeZ * progress));
+
+				if (this.tickTerritoryAtPos(territory, player, steppingPos)) {
+					territoryUpdated = true;
+				}
+			}
+		}
+
+		return territoryUpdated;
+	}
+
+	private boolean tickTerritoryAtPos(PlayerTerritory territory, ServerPlayerEntity player, BlockPos steppingPos) {
 		BlockState state = this.world.getBlockState(steppingPos);
 		BlockState floorState = this.config.getMapConfig().getFloor();
 		if (state != floorState) return false;

@@ -9,11 +9,14 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.Vec3d;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 public class PlayerTerritory implements Comparable<PlayerTerritory> {
 	private final PlayerRef playerRef;
 	private final BlockState territoryState;
+
+	private Vec3d previousPos;
 	private int size = 0;
 
 	public PlayerTerritory(PlayerRef playerRef, BlockState territoryState) {
@@ -27,6 +30,18 @@ public class PlayerTerritory implements Comparable<PlayerTerritory> {
 
 	public BlockState getTerritoryState() {
 		return this.territoryState;
+	}
+
+	public Vec3d getPreviousPos(ServerPlayerEntity player) {
+		if (this.previousPos == null) {
+			this.updatePreviousPos(player);
+		}
+
+		return this.previousPos;
+	}
+
+	public void updatePreviousPos(ServerPlayerEntity player) {
+		this.previousPos = player.getPos();
 	}
 
 	public void incrementSize() {
