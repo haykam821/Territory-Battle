@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import io.github.haykam821.territorybattle.enclosure.EnclosureResult;
 import io.github.haykam821.territorybattle.enclosure.EnclosureTraversal;
 import io.github.haykam821.territorybattle.game.PlayerTerritory;
@@ -57,19 +58,23 @@ public class TerritoryBattleActivePhase {
 	private final GameSpace gameSpace;
 	private final TerritoryBattleMap map;
 	private final TerritoryBattleConfig config;
+	private HolderAttachment guideText;
 	private List<PlayerTerritory> territories;
 	private int ticksLeft;
 	private BossBarWidget timerBar;
 	private final TerritoryBattleSidebar sidebar;
 	private int availableTerritory;
+	private int guideTicksLeft = 0;
 	private int ticksUntilClose = -1;
 
-	public TerritoryBattleActivePhase(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config, List<PlayerTerritory> territories, GlobalWidgets widgets) {
+	public TerritoryBattleActivePhase(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config, HolderAttachment guideText, List<PlayerTerritory> territories, GlobalWidgets widgets) {
 		this.world = world;
 		this.gameSpace = gameSpace;
 		this.map = map;
 		this.config = config;
+		this.guideText = guideText;
 		this.territories = territories;
+		this.guideTicksLeft = this.config.getGuideTicks().get(this.world.getRandom());
 		this.ticksLeft = this.config.getTime();
 		this.availableTerritory = this.config.getMapConfig().x * this.config.getMapConfig().z;
 
@@ -109,13 +114,13 @@ public class TerritoryBattleActivePhase {
 		return territories;
 	}
 
-	public static void open(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config) {
+	public static void open(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config, HolderAttachment guideText) {
 		gameSpace.setActivity(activity -> {
 			GlobalWidgets widgets = GlobalWidgets.addTo(activity);
 
 			List<PlayerTerritory> territories = TerritoryBattleActivePhase.getTerritories(gameSpace.getPlayers(), config.getPlayerBlocks());
 
-			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, world, map, config, territories, widgets);
+			TerritoryBattleActivePhase phase = new TerritoryBattleActivePhase(gameSpace, world, map, config, guideText, territories, widgets);
 
 			TerritoryBattleActivePhase.setRules(activity);
 
@@ -169,6 +174,13 @@ public class TerritoryBattleActivePhase {
 	}
 
 	private void tick() {
+		this.guideTicksLeft -= 1;
+
+		if (this.guideTicksLeft == 0) {
+			this.guideText.destroy();
+			this.guideText = null;
+		}
+
 		// Decrease ticks until game end to zero
 		if (this.isGameEnding()) {
 			if (this.ticksUntilClose == 0) {

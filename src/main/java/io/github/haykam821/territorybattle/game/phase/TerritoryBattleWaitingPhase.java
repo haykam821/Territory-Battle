@@ -1,6 +1,10 @@
 package io.github.haykam821.territorybattle.game.phase;
 
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import io.github.haykam821.territorybattle.game.TerritoryBattleConfig;
+import io.github.haykam821.territorybattle.game.map.TerritoryBattleGuideText;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMap;
 import io.github.haykam821.territorybattle.game.map.TerritoryBattleMapBuilder;
 import net.minecraft.entity.damage.DamageSource;
@@ -27,6 +31,8 @@ public class TerritoryBattleWaitingPhase {
 	private final TerritoryBattleMap map;
 	private final TerritoryBattleConfig config;
 
+	private HolderAttachment guideText;
+
 	public TerritoryBattleWaitingPhase(GameSpace gameSpace, ServerWorld world, TerritoryBattleMap map, TerritoryBattleConfig config) {
 		this.gameSpace = gameSpace;
 		this.world = world;
@@ -49,10 +55,21 @@ public class TerritoryBattleWaitingPhase {
 			TerritoryBattleActivePhase.setRules(activity);
 
 			// Listeners
+			activity.listen(GameActivityEvents.ENABLE, phase::onEnable);
 			activity.listen(GamePlayerEvents.OFFER, phase::offerPlayer);
 			activity.listen(PlayerDeathEvent.EVENT, phase::onPlayerDeath);
 			activity.listen(GameActivityEvents.REQUEST_START, phase::requestStart);
 		});
+	}
+
+	private void onEnable() {
+		// Spawn guide text
+		Vec3d guideTextPos = this.map.getGuideTextPos();
+
+		if (guideTextPos != null) {
+			ElementHolder holder = TerritoryBattleGuideText.createElementHolder();
+			this.guideText = ChunkAttachment.of(holder, world, guideTextPos);
+		}
 	}
 
 	private PlayerOfferResult offerPlayer(PlayerOffer offer) {
@@ -62,7 +79,7 @@ public class TerritoryBattleWaitingPhase {
 	}
 
 	private GameResult requestStart() {
-		TerritoryBattleActivePhase.open(this.gameSpace, this.world, this.map, this.config);
+		TerritoryBattleActivePhase.open(this.gameSpace, this.world, this.map, this.config, this.guideText);
 		return GameResult.ok();
 	}
 

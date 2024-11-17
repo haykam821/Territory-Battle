@@ -18,6 +18,7 @@ public class TerritoryBattleConfig {
 		return instance.group(
 			TerritoryBattleMapConfig.CODEC.fieldOf("map").forGetter(TerritoryBattleConfig::getMapConfig),
 			PlayerConfig.CODEC.fieldOf("players").forGetter(TerritoryBattleConfig::getPlayerConfig),
+			IntProvider.NON_NEGATIVE_CODEC.optionalFieldOf("guide_ticks", ConstantIntProvider.create(SharedConstants.TICKS_PER_SECOND * 5)).forGetter(TerritoryBattleConfig::getGuideTicks),
 			IntProvider.NON_NEGATIVE_CODEC.optionalFieldOf("ticks_until_close", ConstantIntProvider.create(SharedConstants.TICKS_PER_SECOND * 5)).forGetter(TerritoryBattleConfig::getTicksUntilClose),
 			RegistryCodecs.entryList(RegistryKeys.BLOCK).fieldOf("player_blocks").forGetter(TerritoryBattleConfig::getPlayerBlocks),
 			Codec.BOOL.optionalFieldOf("flood_fill", true).forGetter(TerritoryBattleConfig::shouldFloodFill),
@@ -27,14 +28,16 @@ public class TerritoryBattleConfig {
 
 	private final TerritoryBattleMapConfig mapConfig;
 	private final PlayerConfig playerConfig;
+	private final IntProvider guideTicks;
 	private final IntProvider ticksUntilClose;
 	private final RegistryEntryList<Block> playerBlocks;
 	private final boolean floodFill;
 	private final int time;
 
-	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, IntProvider ticksUntilClose, RegistryEntryList<Block> playerBlocks, boolean floodFill, int time) {
+	public TerritoryBattleConfig(TerritoryBattleMapConfig mapConfig, PlayerConfig playerConfig, IntProvider guideTicks, IntProvider ticksUntilClose, RegistryEntryList<Block> playerBlocks, boolean floodFill, int time) {
 		this.mapConfig = mapConfig;
 		this.playerConfig = playerConfig;
+		this.guideTicks = guideTicks;
 		this.ticksUntilClose = ticksUntilClose;
 		this.playerBlocks = playerBlocks;
 		this.floodFill = floodFill;
@@ -47,6 +50,10 @@ public class TerritoryBattleConfig {
 
 	public PlayerConfig getPlayerConfig() {
 		return this.playerConfig;
+	}
+
+	public IntProvider getGuideTicks() {
+		return this.guideTicks;
 	}
 
 	public IntProvider getTicksUntilClose() {
