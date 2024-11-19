@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import net.minecraft.util.math.Vec3i;
-import xyz.nucleoid.plasmid.util.BlockTraversal;
+import xyz.nucleoid.plasmid.api.util.BlockTraversal;
 
 @Mixin(value = BlockTraversal.Connectivity.class, remap = false)
 public interface BlockTraversalConnectivityAccessor {
